@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 /*
- * STUDENT_ALLOCATOR: A skeleton implementation.
  * Replace these stubs with your own logic.
  */
 

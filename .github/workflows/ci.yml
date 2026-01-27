@@ -37,7 +37,7 @@ jobs:
           EXTRA_CFLAGS="-Iallocators/jemalloc/jemalloc_src/include" \
           LDFLAGS+="$(pwd)/allocators/jemalloc/jemalloc_src/lib/libjemalloc.a -lpthread -ldl"
 
-    - name: Run Student Skeleton Tests
+    - name: Run Skeleton Tests
       run: make run-tests ALLOCATOR=allocators/skeleton/my_allocator.c
 
     - name: Run Glibc Benchmarks (Quick)

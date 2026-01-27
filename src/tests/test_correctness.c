@@ -438,8 +438,8 @@ test_case_t correctness_tests[] = {
 
     // Calloc
     {"TC-CALLOC-001", "zero initialization", test_calloc_001},
-    {"TC-CALLOC-002", "overflow SIZE_MAX×2", test_calloc_002},
-    {"TC-CALLOC-003", "overflow (SIZE_MAX/2+2)×2", test_calloc_003},
+    {"TC-CALLOC-002", "overflow SIZE_MAXx2", test_calloc_002},
+    {"TC-CALLOC-003", "overflow (SIZE_MAX/2+2)x2", test_calloc_003},
     {"TC-CALLOC-004", "large array", test_calloc_004},
 
     // Usable size
