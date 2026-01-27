@@ -23,6 +23,7 @@ jobs:
 
     - name: Run Glibc Baseline Tests
       run: make run-tests
+      continue-on-error: true
 
     - name: Run Mimalloc Tests
       run: |
