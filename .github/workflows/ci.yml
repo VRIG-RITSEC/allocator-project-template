@@ -1,0 +1,40 @@
+name: Allocator Test Suite CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Build Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake autoconf automake libtool
+
+    - name: Setup Allocators (Local Build)
+      run: ./setup_allocators.sh
+
+    - name: Run Glibc Baseline Tests
+      run: make run-tests
+
+    - name: Run Mimalloc Tests
+      run: |
+        make run-tests ALLOCATOR=allocators/mimalloc/mimalloc_wrapper.c \
+          EXTRA_CFLAGS="-Iallocators/mimalloc/mimalloc_src/include" \
+          LDFLAGS+="$(pwd)/build_secure/libmimalloc-secure.a -lpthread -lrt"
+
+    - name: Run Jemalloc Tests
+      run: |
+        make run-tests ALLOCATOR=allocators/jemalloc/jemalloc_wrapper.c \
+          EXTRA_CFLAGS="-Iallocators/jemalloc/jemalloc_src/include" \
+          LDFLAGS+="$(pwd)/allocators/jemalloc/jemalloc_src/lib/libjemalloc.a -lpthread -ldl"
+
+    - name: Run Glibc Benchmarks (Quick)
+      run: make run-bench ARGS="--quick"
