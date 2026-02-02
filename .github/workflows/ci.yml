@@ -25,6 +25,14 @@ jobs:
       run: make run-tests
       continue-on-error: true
 
+    - name: Run Mimalloc Tests
+      run: make run-tests ALLOCATOR=allocators/mimalloc/mimalloc_src
+      continue-on-error: true
+
+    - name: Run Jemalloc Tests
+      run: make run-tests ALLOCATOR=allocators/jemalloc/jemalloc_src
+      continue-on-error: true
+
     - name: Run Skeleton/MyAlloc Tests
       run: make run-tests ALLOCATOR=allocators/skeleton/my_allocator.c
       continue-on-error: true
