@@ -12,7 +12,6 @@ static void wl_syn_001_run(allocator_t *alloc, bench_metrics_t *metrics) {
   latency_samples_t lat;
   latency_init(&lat);
 
-  // Warmup
   for (size_t i = 0; i < BENCH_WARMUP_OPS; i++) {
     void *p = alloc->malloc(64);
     alloc->free(p);
@@ -49,14 +48,13 @@ static void wl_syn_002_run(allocator_t *alloc, bench_metrics_t *metrics) {
   bench_rng_t rng;
   bench_rng_seed(&rng, 0x12345678);
 
-  // Warmup
   for (size_t i = 0; i < BENCH_WARMUP_OPS; i++) {
     size_t sz = bench_rng_range(&rng, 16, 256);
     void *p = alloc->malloc(sz);
     alloc->free(p);
   }
 
-  bench_rng_seed(&rng, 0x12345678); // Reset for reproducibility
+  bench_rng_seed(&rng, 0x12345678);
   uint64_t start = bench_get_time_ns();
 
   for (size_t i = 0; i < iterations; i++) {
@@ -151,7 +149,7 @@ static void wl_syn_005_run(allocator_t *alloc, bench_metrics_t *metrics) {
   latency_samples_t lat;
   latency_init(&lat);
 
-  for (size_t i = 0; i < 1000; i++) { // Smaller warmup for large allocs
+  for (size_t i = 0; i < 1000; i++) {
     void *p = alloc->malloc(1048576);
     alloc->free(p);
   }
@@ -163,7 +161,7 @@ static void wl_syn_005_run(allocator_t *alloc, bench_metrics_t *metrics) {
     void *p = alloc->malloc(1048576);
     alloc->free(p);
 
-    if (i % 10 == 0) { // Sample more frequently for fewer iterations
+    if (i % 10 == 0) {
       latency_record(&lat, bench_get_time_ns() - op_start);
     }
   }
@@ -227,9 +225,7 @@ static void wl_syn_007_run(allocator_t *alloc, bench_metrics_t *metrics) {
   size_t total_ops = 0;
 
   while (total_ops < iterations) {
-    // Allocate batch
     for (size_t i = 0; i < batch_size && total_ops < iterations; i++) {
-      // Power-law: mostly small, some large
       size_t sz = bench_rng_powerlaw(&rng, 16, 65536, 2.0);
       uint64_t op_start = bench_get_time_ns();
       batch[i] = alloc->malloc(sz);
@@ -240,7 +236,6 @@ static void wl_syn_007_run(allocator_t *alloc, bench_metrics_t *metrics) {
       total_ops++;
     }
 
-    // Free batch
     for (size_t i = 0; i < batch_size; i++) {
       if (batch[i]) {
         alloc->free(batch[i]);
@@ -268,7 +263,6 @@ static void wl_syn_008_run(allocator_t *alloc, bench_metrics_t *metrics) {
   for (size_t i = 0; i < iterations; i++) {
     void *p = alloc->malloc(16);
 
-    // Grow: 16 → 32 → 64 → 128 → 256 → 512 → 1024 → 2048 → 4096
     for (size_t sz = 32; sz <= 4096; sz *= 2) {
       uint64_t op_start = bench_get_time_ns();
       p = alloc->realloc(p, sz);
@@ -282,7 +276,6 @@ static void wl_syn_008_run(allocator_t *alloc, bench_metrics_t *metrics) {
   }
 
   uint64_t elapsed = bench_get_time_ns() - start;
-  // Count each realloc chain as 8 operations
   metrics->throughput_ops_sec =
       (double)(iterations * 8) / ((double)elapsed / 1e9);
   metrics->rss_bytes = bench_get_rss();
@@ -302,7 +295,6 @@ static void wl_syn_009_run(allocator_t *alloc, bench_metrics_t *metrics) {
   for (size_t i = 0; i < iterations; i++) {
     void *p = alloc->malloc(4096);
 
-    // Shrink: 4096 → 2048 → 1024 → 512 → 256 → 128 → 64 → 32 → 16
     for (size_t sz = 2048; sz >= 16; sz /= 2) {
       uint64_t op_start = bench_get_time_ns();
       p = alloc->realloc(p, sz);
@@ -334,7 +326,7 @@ static void wl_syn_010_run(allocator_t *alloc, bench_metrics_t *metrics) {
 
   for (size_t i = 0; i < BENCH_WARMUP_OPS; i++) {
     size_t nmemb = bench_rng_range(&rng, 1, 256);
-    size_t size = bench_rng_range(&rng, 16, 16); // 16-4096 total
+    size_t size = bench_rng_range(&rng, 16, 16);
     void *p = alloc->calloc(nmemb, size);
     alloc->free(p);
   }

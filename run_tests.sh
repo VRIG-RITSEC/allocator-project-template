@@ -7,7 +7,6 @@ set -e
 
 BASE_DIR=$(pwd)
 ALLOC_DIR="$BASE_DIR/allocators"
-# Argument parsing
 FILTER_ALLOC=""
 TEST_ARGS=""
 
@@ -42,7 +41,6 @@ run_test() {
     local extra_cflags=$3
     local extra_ldflags=$4
 
-    # Skip if we are filtering for a different allocator
     if [ ! -z "$FILTER_ALLOC" ] && [ "$FILTER_ALLOC" != "$name" ]; then
         return 0
     fi
@@ -97,9 +95,7 @@ if [ -z "$CURRENT_CUSTOM_ALLOC" ]; then
 fi
 
 if [ -f "$CURRENT_CUSTOM_ALLOC" ]; then
-    # We allow "custom" or "skeleton" as filters for this slot
     if [ ! -z "$FILTER_ALLOC" ] && [ "$FILTER_ALLOC" != "custom" ] && [ "$FILTER_ALLOC" != "skeleton" ] && [ "$FILTER_ALLOC" != "$CURRENT_CUSTOM_NAME" ]; then
-        # Skip
         :
     else
         run_test "$CURRENT_CUSTOM_NAME" "$CURRENT_CUSTOM_ALLOC" "$CUSTOM_CFLAGS" "$CUSTOM_LDFLAGS"
