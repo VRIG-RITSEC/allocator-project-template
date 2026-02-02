@@ -22,6 +22,9 @@ extern const size_t num_fragmentation_tests;
 extern test_case_t feature_tests[];
 extern const size_t num_feature_tests;
 
+extern test_case_t realistic_tests[];
+extern const size_t num_realistic_tests;
+
 // Allocator to test (provided by linked allocator object)
 extern allocator_t *get_test_allocator(void);
 
@@ -34,6 +37,7 @@ static void print_usage(const char *prog) {
   printf("  --edge        Run edge case tests only\n");
   printf("  --frag        Run fragmentation tests only\n");
   printf("  --features    Run optional feature tests (skip if unsupported)\n");
+  printf("  --realistic   Run realistic workload tests only\n");
   printf("  --help        Show this help\n");
 }
 
@@ -43,13 +47,15 @@ int main(int argc, char *argv[]) {
   bool run_edge = true;
   bool run_frag = true;
   bool run_features = true;
+  bool run_realistic = true;
 
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--help") == 0) {
       print_usage(argv[0]);
       return 0;
     } else if (strcmp(argv[i], "--all") == 0) {
-      run_correctness = run_stress = run_edge = run_frag = run_features = true;
+      run_correctness = run_stress = run_edge = run_frag = run_features =
+          run_realistic = true;
     } else if (strcmp(argv[i], "--correctness") == 0) {
       run_correctness = true;
       run_stress = run_edge = run_frag = false;
@@ -64,7 +70,11 @@ int main(int argc, char *argv[]) {
       run_correctness = run_stress = run_edge = run_features = false;
     } else if (strcmp(argv[i], "--features") == 0) {
       run_features = true;
-      run_correctness = run_stress = run_edge = run_frag = false;
+      run_correctness = run_stress = run_edge = run_frag = run_realistic =
+          false;
+    } else if (strcmp(argv[i], "--realistic") == 0) {
+      run_realistic = true;
+      run_correctness = run_stress = run_edge = run_frag = run_features = false;
     }
   }
 
@@ -145,6 +155,16 @@ int main(int argc, char *argv[]) {
     test_summary_t summary = {0};
     run_test_suite("Optional Features", feature_tests, num_feature_tests, alloc,
                    &summary);
+    total_summary.total += summary.total;
+    total_summary.passed += summary.passed;
+    total_summary.failed += summary.failed;
+    total_summary.skipped += summary.skipped;
+  }
+
+  if (run_realistic) {
+    test_summary_t summary = {0};
+    run_test_suite("Realistic Workloads", realistic_tests, num_realistic_tests,
+                   alloc, &summary);
     total_summary.total += summary.total;
     total_summary.passed += summary.passed;
     total_summary.failed += summary.failed;

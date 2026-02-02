@@ -20,7 +20,6 @@ static size_t get_rss_bytes(void) {
   }
   fclose(f);
 
-  // resident is in pages, typically 4096 bytes
   return resident * 4096;
 }
 
@@ -32,31 +31,25 @@ static test_result_t test_frag_001(allocator_t *alloc) {
   void **ptrs = alloc->malloc(num_blocks * sizeof(void *));
   TEST_ASSERT_NOT_NULL(ptrs, "meta allocation");
 
-  // Allocate all blocks
   fprintf(stderr, "\r    Allocating %zu blocks...", num_blocks);
   for (size_t i = 0; i < num_blocks; i++) {
     ptrs[i] = alloc->malloc(block_size);
     TEST_ASSERT_NOT_NULL(ptrs[i], "initial allocation");
   }
 
-  // Free every other block (create holes)
   fprintf(stderr, "\r    Creating swiss cheese pattern...");
   for (size_t i = 0; i < num_blocks; i += 2) {
     alloc->free(ptrs[i]);
     ptrs[i] = NULL;
   }
 
-  // Try to allocate a large block
-  // This tests whether the allocator can coalesce or has a fallback
   fprintf(stderr, "\r    Attempting large allocation in fragmented heap...");
   size_t large_size = block_size * 100; // 25KB
   void *large = alloc->malloc(large_size);
 
-  // Large allocation should succeed (allocator should handle fragmentation)
   TEST_ASSERT_NOT_NULL(large,
                        "large allocation in fragmented heap should succeed");
 
-  // Cleanup
   alloc->free(large);
   for (size_t i = 0; i < num_blocks; i++) {
     if (ptrs[i])
@@ -80,7 +73,6 @@ static test_result_t test_frag_002(allocator_t *alloc) {
   size_t max_rss = baseline_rss;
 
   for (size_t cycle = 0; cycle < 10; cycle++) {
-    // Allocate to peak
     for (size_t i = 0; i < peak_allocs; i++) {
       ptrs[i] = alloc->malloc(alloc_size);
       TEST_ASSERT_NOT_NULL(ptrs[i], "peak allocation");
@@ -90,7 +82,6 @@ static test_result_t test_frag_002(allocator_t *alloc) {
     if (peak_rss > max_rss)
       max_rss = peak_rss;
 
-    // Free all
     for (size_t i = 0; i < peak_allocs; i++) {
       alloc->free(ptrs[i]);
     }
@@ -104,12 +95,9 @@ static test_result_t test_frag_002(allocator_t *alloc) {
   size_t final_rss = get_rss_bytes();
   alloc->free(ptrs);
 
-  // Check that RSS returns to near baseline (within 2x is acceptable)
-  // Some allocators keep memory for future use, which is fine
   fprintf(stderr, "\n    Baseline: %zu KB, Final: %zu KB, Max: %zu KB\n",
           baseline_rss / 1024, final_rss / 1024, max_rss / 1024);
 
-  // We don't fail this test, just report metrics
   return TEST_PASS;
 }
 
@@ -120,8 +108,7 @@ static test_result_t test_frag_003(allocator_t *alloc) {
   size_t sizes[] = {16, 32, 64, 128, 256, 512, 1024, 2048};
   const size_t num_sizes = sizeof(sizes) / sizeof(sizes[0]);
 
-  // Keep some allocations live from each size class
-  void *live[8][100]; // 100 live allocations per size class
+  void *live[8][100];
   memset(live, 0, sizeof(live));
 
   size_t baseline_rss = get_rss_bytes();
@@ -146,7 +133,6 @@ static test_result_t test_frag_003(allocator_t *alloc) {
     }
   }
 
-  // Cleanup
   for (size_t c = 0; c < num_sizes; c++) {
     for (size_t s = 0; s < 100; s++) {
       if (live[c][s])
@@ -158,8 +144,6 @@ static test_result_t test_frag_003(allocator_t *alloc) {
   fprintf(stderr, "\n    Baseline: %zu KB, Final: %zu KB\n",
           baseline_rss / 1024, final_rss / 1024);
 
-  // RSS should not grow unbounded (within 10x baseline is acceptable for this
-  // test)
   TEST_ASSERT(final_rss < baseline_rss * 10, "RSS should not grow unbounded");
 
   return TEST_PASS;
@@ -186,12 +170,10 @@ static test_result_t test_frag_004(allocator_t *alloc) {
   size_t max_rss = baseline_rss;
 
   for (size_t op = 0; op < duration_ops; op++) {
-    // 60% allocate, 40% free (net growth initially, then steady state)
     bool do_alloc = (live_count < 100) ||
                     (rng_next(&rng) % 100 < 60 && live_count < max_live);
 
     if (do_alloc) {
-      // Find empty slot
       size_t slot = rng_next(&rng) % max_live;
       size_t attempts = 0;
       while (ptrs[slot] != NULL && attempts < 100) {
@@ -216,7 +198,6 @@ static test_result_t test_frag_004(allocator_t *alloc) {
         }
       }
     } else if (live_count > 0) {
-      // Find occupied slot
       size_t slot = rng_next(&rng) % max_live;
       size_t attempts = 0;
       while (ptrs[slot] == NULL && attempts < 100) {
@@ -239,7 +220,6 @@ static test_result_t test_frag_004(allocator_t *alloc) {
     }
   }
 
-  // Cleanup
   for (size_t i = 0; i < max_live; i++) {
     if (ptrs[i])
       alloc->free(ptrs[i]);
@@ -253,8 +233,6 @@ static test_result_t test_frag_004(allocator_t *alloc) {
 
   return TEST_PASS;
 }
-
-// Test Registration
 
 test_case_t fragmentation_tests[] = {
     {"TC-FRAG-001", "swiss cheese pattern", test_frag_001},

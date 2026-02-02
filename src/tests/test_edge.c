@@ -219,22 +219,15 @@ static test_result_t test_edge_010(allocator_t *alloc) {
 }
 
 // TC-EDGE-FORK-001: Fork Safety
-// Verifies that the allocator does not deadlock or crash in a child process
-// after forking from a multi-threaded parent environment (implied by previous
-// tests).
 static test_result_t test_edge_fork_001(allocator_t *alloc) {
   void *ptr = alloc->malloc(64);
   TEST_ASSERT_NOT_NULL(ptr, "parent malloc");
-
-  // We don't free 'ptr' yet to make sure heap state is non-trivial.
 
   pid_t pid = fork();
   if (pid < 0)
     return TEST_FAIL;
 
   if (pid == 0) {
-    // Child
-
     void *child_ptr = alloc->malloc(128);
     if (!child_ptr)
       _exit(1);
@@ -257,8 +250,6 @@ static test_result_t test_edge_fork_001(allocator_t *alloc) {
   }
   return TEST_FAIL;
 }
-
-// Test Registration
 
 test_case_t edge_tests[] = {
     {"TC-EDGE-001", "malloc(SIZE_MAX)", test_edge_001},

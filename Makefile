@@ -1,11 +1,3 @@
-# Makefile for Allocator Test Suite
-# Usage:
-#   make                  - Build with glibc allocator (default)
-#   make ALLOCATOR=path   - Build with custom allocator
-#   make tests            - Build test runner only
-#   make bench            - Build benchmark runner only
-#   make clean            - Clean build artifacts
-
 
 CC       ?= gcc
 CFLAGS   := -std=c17 -Wall -Wextra -Wpedantic -Werror
@@ -23,28 +15,24 @@ else ifeq ($(MODE),release)
 else ifeq ($(MODE),bench)
     CFLAGS  += -O3 -march=native -DNDEBUG
 else
-    # Default: optimized with debug info
     CFLAGS  += -O2 -g
 endif
 
-LDFLAGS  += -lm -lpthread
+LDFLAGS  += -lm -lpthread $(EXTRA_LDFLAGS)
 
-# Test sources
 TEST_SRCS := src/tests/test_correctness.c \
              src/tests/test_stress.c \
              src/tests/test_edge.c \
              src/tests/test_fragmentation.c \
              src/tests/test_features.c \
+             src/tests/test_realistic.c \
              src/harness/main_tests.c
 
-# Benchmark sources
 BENCH_SRCS := src/benchmarks/bench_synthetic.c \
               src/harness/main_bench.c
 
-# Default allocator (glibc wrapper)
 DEFAULT_ALLOC := allocators/glibc/glibc_allocator.c
 
-# Custom allocator (set via ALLOCATOR=path/to/allocator.c)
 ALLOCATOR ?= $(DEFAULT_ALLOC)
 
 BUILD_DIR := build
@@ -53,7 +41,6 @@ BIN_DIR   := bin
 TEST_BIN  := $(BIN_DIR)/run_tests
 BENCH_BIN := $(BIN_DIR)/run_bench
 
-# Object files
 TEST_OBJS  := $(patsubst %.c,$(BUILD_DIR)/%.o,$(TEST_SRCS))
 BENCH_OBJS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(BENCH_SRCS))
 ALLOC_OBJ  := $(BUILD_DIR)/allocator.o
@@ -66,35 +53,28 @@ tests: $(TEST_BIN)
 
 bench: $(BENCH_BIN)
 
-# Test binary
 $(TEST_BIN): $(TEST_OBJS) $(ALLOC_OBJ) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 	@echo "Built test runner: $@"
 	@echo "Allocator: $(ALLOCATOR)"
 
-# Benchmark binary
 $(BENCH_BIN): $(BENCH_OBJS) $(ALLOC_OBJ) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 	@echo "Built benchmark runner: $@"
 	@echo "Allocator: $(ALLOCATOR)"
 
-# Compile test sources
 $(BUILD_DIR)/src/tests/%.o: src/tests/%.c | $(BUILD_DIR)/src/tests
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-# Compile benchmark sources
 $(BUILD_DIR)/src/benchmarks/%.o: src/benchmarks/%.c | $(BUILD_DIR)/src/benchmarks
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-# Compile harness sources
 $(BUILD_DIR)/src/harness/%.o: src/harness/%.c | $(BUILD_DIR)/src/harness
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-# Compile allocator (custom or default)
 $(ALLOC_OBJ): $(ALLOCATOR) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-# Create directories
 $(BUILD_DIR):
 	mkdir -p $@
 

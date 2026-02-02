@@ -67,3 +67,6 @@ allocator_t allocator = {.malloc = mi_malloc_wrapper,
                                       .zero_on_free = false,
                                       .min_alignment = 8, // mimalloc default
                                       .max_alignment = 1024 * 1024}};
+
+allocator_t *get_test_allocator(void) { return &allocator; }
+allocator_t *get_bench_allocator(void) { return &allocator; }
