@@ -18,12 +18,35 @@ static test_result_t run_death_test(void (*func)(allocator_t *),
   }
 
   if (pid == 0) {
+    alarm(2); // Safety net for child process
     func(alloc);
     exit(0); // If we reached here, we didn't crash -> FAIL
   }
 
   int status;
-  waitpid(pid, &status, 0);
+  // Wait with timeout to prevent hanging CI
+  int timeout_ms = 2000;
+  int interval_ms = 10;
+  int elapsed = 0;
+
+  while (elapsed < timeout_ms) {
+    int res = waitpid(pid, &status, WNOHANG);
+    if (res == pid) {
+      break; // Child exited
+    }
+    if (res < 0) {
+      return TEST_FAIL; // Error waiting
+    }
+    usleep(interval_ms * 1000);
+    elapsed += interval_ms;
+  }
+
+  if (elapsed >= timeout_ms) {
+    kill(pid, SIGKILL);
+    waitpid(pid, &status, 0); // Cleanup
+    fprintf(stderr, "    [TIMEOUT] Death test timed out (deadlock?)\n");
+    return TEST_FAIL;
+  }
 
   if (WIFSIGNALED(status)) {
     // Crashed by signal (SEGV, ABRT, etc.) -> PASS for security feature
@@ -31,7 +54,7 @@ static test_result_t run_death_test(void (*func)(allocator_t *),
   }
 
   if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
-    // Exited with error code (detected and aborted safevly) -> PASS
+    // Exited with error code (detected and aborted safely) -> PASS
     return TEST_PASS;
   }
 
