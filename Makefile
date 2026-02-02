@@ -125,10 +125,10 @@ test-mimalloc-secure: clean-alloc
 	$(MAKE) run-tests ALLOCATOR=$(MIMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -lmimalloc-secure" EXTRA_CFLAGS="-Iallocators/mimalloc/mimalloc_src/include"
 
 test-jemalloc: clean-alloc
-	$(MAKE) run-tests ALLOCATOR=$(JEMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -ljemalloc -lrt -ldl"
+	$(MAKE) run-tests ALLOCATOR=$(JEMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -ljemalloc -lrt -ldl" EXTRA_CFLAGS="-Iallocators/jemalloc/jemalloc_src/include"
 
 test-jemalloc-debug: clean-alloc
-	$(MAKE) run-tests ALLOCATOR=$(JEMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -ljemalloc-debug -lrt -ldl"
+	$(MAKE) run-tests ALLOCATOR=$(JEMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -ljemalloc-debug -lrt -ldl" EXTRA_CFLAGS="-Iallocators/jemalloc/jemalloc_src/include"
 
 test-glibc: clean-alloc
 	$(MAKE) run-tests ALLOCATOR=$(GLIBC_ALLOC)
