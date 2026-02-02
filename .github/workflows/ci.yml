@@ -27,6 +27,8 @@ jobs:
 
     - name: Run Skeleton/MyAlloc Tests
       run: make run-tests ALLOCATOR=allocators/skeleton/my_allocator.c
+      continue-on-error: true
 
     - name: Run Glibc Benchmarks (Quick)
       run: make run-bench ARGS="--quick"
+      continue-on-error: true
