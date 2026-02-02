@@ -45,6 +45,10 @@ jobs:
       run: make test-skeleton
       continue-on-error: true
 
-    - name: Run Glibc Benchmarks (Quick)
-      run: make run-bench ARGS="--quick"
+    - name: Run Glibc Benchmarks (Full)
+      run: make bench-glibc
+      continue-on-error: true
+
+    - name: Run Skeleton Benchmarks (Full)
+      run: make bench-skeleton
       continue-on-error: true

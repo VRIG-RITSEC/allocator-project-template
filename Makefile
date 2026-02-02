@@ -136,6 +136,19 @@ test-glibc: clean-alloc
 test-skeleton: clean-alloc
 	$(MAKE) run-tests ALLOCATOR=$(SKELETON_ALLOC)
 
+# Benchmark/Performance targets
+bench-glibc: clean-alloc
+	$(MAKE) MODE=bench run-bench ALLOCATOR=$(GLIBC_ALLOC)
+
+bench-skeleton: clean-alloc
+	$(MAKE) MODE=bench run-bench ALLOCATOR=$(SKELETON_ALLOC)
+
+bench-mimalloc: clean-alloc
+	$(MAKE) MODE=bench run-bench ALLOCATOR=$(MIMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -lmimalloc" EXTRA_CFLAGS="-Iallocators/mimalloc/mimalloc_src/include"
+
+bench-jemalloc: clean-alloc
+	$(MAKE) MODE=bench run-bench ALLOCATOR=$(JEMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -ljemalloc -lrt -ldl -lm" EXTRA_CFLAGS="-Iallocators/jemalloc/jemalloc_src/include"
+
 debug:
 	$(MAKE) MODE=debug all
 
