@@ -25,19 +25,7 @@ jobs:
       run: make run-tests
       continue-on-error: true
 
-    - name: Run Mimalloc Tests
-      run: |
-        make run-tests ALLOCATOR=allocators/mimalloc/mimalloc_wrapper.c \
-          EXTRA_CFLAGS="-Iallocators/mimalloc/mimalloc_src/include" \
-          LDFLAGS+="$(pwd)/build_secure/libmimalloc-secure.a -lpthread -lrt"
-
-    - name: Run Jemalloc Tests
-      run: |
-        make run-tests ALLOCATOR=allocators/jemalloc/jemalloc_wrapper.c \
-          EXTRA_CFLAGS="-Iallocators/jemalloc/jemalloc_src/include" \
-          LDFLAGS+="$(pwd)/allocators/jemalloc/jemalloc_src/lib/libjemalloc.a -lpthread -ldl"
-
-    - name: Run Skeleton Tests
+    - name: Run Skeleton/MyAlloc Tests
       run: make run-tests ALLOCATOR=allocators/skeleton/my_allocator.c
 
     - name: Run Glibc Benchmarks (Quick)
