@@ -111,22 +111,30 @@ run-quick: bench
 MIMALLOC_WRAPPER := allocators/mimalloc/mimalloc_wrapper.c
 JEMALLOC_WRAPPER := allocators/jemalloc/jemalloc_wrapper.c
 GLIBC_ALLOC      := allocators/glibc/glibc_allocator.c
+SKELETON_ALLOC   := allocators/skeleton/my_allocator.c
+
+# Force rebuild of allocator object when switching
+clean-alloc:
+	rm -f $(ALLOC_OBJ)
 
 # Convenience targets for testing variants
-test-mimalloc:
+test-mimalloc: clean-alloc
 	$(MAKE) run-tests ALLOCATOR=$(MIMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -lmimalloc" EXTRA_CFLAGS="-Iallocators/mimalloc/mimalloc_src/include"
 
-test-mimalloc-secure:
+test-mimalloc-secure: clean-alloc
 	$(MAKE) run-tests ALLOCATOR=$(MIMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -lmimalloc-secure" EXTRA_CFLAGS="-Iallocators/mimalloc/mimalloc_src/include"
 
-test-jemalloc:
+test-jemalloc: clean-alloc
 	$(MAKE) run-tests ALLOCATOR=$(JEMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -ljemalloc -lrt -ldl"
 
-test-jemalloc-debug:
+test-jemalloc-debug: clean-alloc
 	$(MAKE) run-tests ALLOCATOR=$(JEMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -ljemalloc-debug -lrt -ldl"
 
-test-glibc:
+test-glibc: clean-alloc
 	$(MAKE) run-tests ALLOCATOR=$(GLIBC_ALLOC)
+
+test-skeleton: clean-alloc
+	$(MAKE) run-tests ALLOCATOR=$(SKELETON_ALLOC)
 
 debug:
 	$(MAKE) MODE=debug all
@@ -154,9 +162,7 @@ help:
 	@echo "  test-mimalloc-secure   Run tests with Mimalloc (Secure)"
 	@echo "  test-jemalloc          Run tests with Jemalloc (Release)"
 	@echo "  test-jemalloc-debug    Run tests with Jemalloc (Debug)"
-	@echo "  debug        Build with debug flags and sanitizers"
-	@echo "  release      Build optimized release"
-	@echo "  clean        Remove build artifacts"
+	@echo "  test-skeleton          Run tests with Student Skeleton"
 	@echo ""
 	@echo "Variables:"
 	@echo "  ALLOCATOR=path  Path to custom allocator source"
