@@ -1,6 +1,7 @@
 # Build directories
 build/
 build_*/
+libs/
 
 # Compiled Object files
 *.o
@@ -25,9 +26,6 @@ cmake_install.cmake
 *~
 .DS_Store
 
-# Allocator specific (exclude the source dirs if they are submodules, but here they seem to be cloned)
-# We want to ignore build artifacts inside allocators
-allocators/*/out/
-allocators/*/bin/
-allocators/*/lib/
-allocators/*/obj/
+# Allocator Sources (managed by setup_allocators.sh)
+allocators/mimalloc/mimalloc_src/
+allocators/jemalloc/jemalloc_src/

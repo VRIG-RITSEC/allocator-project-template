@@ -25,12 +25,20 @@ jobs:
       run: make run-tests
       continue-on-error: true
 
-    - name: Run Mimalloc Tests
-      run: make run-tests ALLOCATOR=allocators/mimalloc/mimalloc_src
+    - name: Run Mimalloc Tests (Release)
+      run: make test-mimalloc
       continue-on-error: true
 
-    - name: Run Jemalloc Tests
-      run: make run-tests ALLOCATOR=allocators/jemalloc/jemalloc_src
+    - name: Run Mimalloc Tests (Secure)
+      run: make test-mimalloc-secure
+      continue-on-error: true
+
+    - name: Run Jemalloc Tests (Release)
+      run: make test-jemalloc
+      continue-on-error: true
+
+    - name: Run Jemalloc Tests (Debug)
+      run: make test-jemalloc-debug
       continue-on-error: true
 
     - name: Run Skeleton/MyAlloc Tests

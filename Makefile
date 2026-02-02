@@ -108,6 +108,26 @@ run-quick: bench
 	@echo ""
 	./$(BENCH_BIN) --quick
 
+MIMALLOC_WRAPPER := allocators/mimalloc/mimalloc_wrapper.c
+JEMALLOC_WRAPPER := allocators/jemalloc/jemalloc_wrapper.c
+GLIBC_ALLOC      := allocators/glibc/glibc_allocator.c
+
+# Convenience targets for testing variants
+test-mimalloc:
+	$(MAKE) run-tests ALLOCATOR=$(MIMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -lmimalloc" EXTRA_CFLAGS="-Iallocators/mimalloc/mimalloc_src/include"
+
+test-mimalloc-secure:
+	$(MAKE) run-tests ALLOCATOR=$(MIMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -lmimalloc-secure" EXTRA_CFLAGS="-Iallocators/mimalloc/mimalloc_src/include"
+
+test-jemalloc:
+	$(MAKE) run-tests ALLOCATOR=$(JEMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -ljemalloc -lrt -ldl"
+
+test-jemalloc-debug:
+	$(MAKE) run-tests ALLOCATOR=$(JEMALLOC_WRAPPER) EXTRA_LDFLAGS="-Llibs -ljemalloc-debug -lrt -ldl"
+
+test-glibc:
+	$(MAKE) run-tests ALLOCATOR=$(GLIBC_ALLOC)
+
 debug:
 	$(MAKE) MODE=debug all
 
@@ -130,6 +150,10 @@ help:
 	@echo "  run-tests    Build and run tests"
 	@echo "  run-bench    Build and run benchmarks"
 	@echo "  run-quick    Build and run quick benchmarks"
+	@echo "  test-mimalloc          Run tests with Mimalloc (Release)"
+	@echo "  test-mimalloc-secure   Run tests with Mimalloc (Secure)"
+	@echo "  test-jemalloc          Run tests with Jemalloc (Release)"
+	@echo "  test-jemalloc-debug    Run tests with Jemalloc (Debug)"
 	@echo "  debug        Build with debug flags and sanitizers"
 	@echo "  release      Build optimized release"
 	@echo "  clean        Remove build artifacts"
